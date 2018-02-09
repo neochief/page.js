@@ -549,15 +549,11 @@
     if (e.metaKey || e.ctrlKey || e.shiftKey) return;
     if (e.defaultPrevented) return;
 
-
-
     // ensure link
     // use shadow dom when available
     var el = e.path ? e.path[0] : e.target;
     while (el && 'A' !== el.nodeName) el = el.parentNode;
     if (!el || 'A' !== el.nodeName) return;
-
-
 
     // Ignore if tag has
     // 1. "download" attribute
@@ -568,12 +564,6 @@
     var link = el.getAttribute('href');
     if (!hashbang && el.pathname === location.pathname && (el.hash || '#' === link)) return;
 
-    // prevent handling links with the same url
-    if (el.pathname + el.search === location.pathname + location.search) {
-      e.preventDefault();
-      return;
-    }
-
     // Check for mailto: in the href
     if (link && link.indexOf('mailto:') > -1) return;
 
@@ -583,7 +573,11 @@
     // x-origin
     if (!sameOrigin(el.href)) return;
 
-
+    // prevent handling links with the same url
+    if (el.pathname + el.search === location.pathname + location.search) {
+      e.preventDefault();
+      return;
+    }
 
     // rebuild path
     var path = el.pathname + el.search + (el.hash || '');
@@ -622,9 +616,13 @@
    */
 
   function sameOrigin(href) {
-    var origin = location.protocol + '//' + location.hostname;
-    if (location.port) origin += ':' + location.port;
-    return (href && (0 === href.indexOf(origin)));
+    if(!href || !isLocation) return false;
+    var url = toURL(href);
+
+    var loc = pageWindow.location;
+    return loc.protocol === url.protocol &&
+      loc.hostname === url.hostname &&
+      loc.port === url.port;
   }
 
   page.sameOrigin = sameOrigin;
